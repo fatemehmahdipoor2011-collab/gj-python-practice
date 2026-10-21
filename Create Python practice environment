@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>محیط تمرین پایتون | GJ Code Academy</title>
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 14px;
+      background: #0b1120;
+      color: #e5e7eb;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 21px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle, .note {
+      color: #9ca3af;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .panel {
+      background: #111827;
+      border: 1px solid #293548;
+      border-radius: 13px;
+      overflow: hidden;
+      margin-bottom: 13px;
+    }
+
+    .heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid #293548;
+      font-size: 13px;
+    }
+
+    #status { color: #9ca3af; }
+
+    .editor-wrap { direction: ltr; }
+
+    .CodeMirror {
+      height: 320px;
+      font: 14px/1.6 Consolas, monospace;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 15px;
+      color: white;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    #runButton { background: #15803d; }
+    #exampleButton { background: #2563eb; }
+    #clearButton { background: #374151; }
+
+    #output {
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      min-height: 110px;
+      max-height: 350px;
+      overflow: auto;
+      margin: 0;
+      padding: 14px;
+      color: #d1fae5;
+      font: 13px/1.65 Consolas, monospace;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 9px; }
+      .CodeMirror { height: 280px; font-size: 13px; }
+      button { flex: 1; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <h1>💻 محیط تمرین پایتون</h1>
+    <p class="subtitle">
+      کدت را بنویس، روی اجرای کد بزن و نتیجه را ببین.
+    </p>
+
+    <section class="panel">
+      <div class="heading">
+        <span>فایل: main.py</span>
+        <span id="status">در حال بارگذاری پایتون...</span>
+      </div>
+
+      <div class="editor-wrap">
+        <textarea id="code">name = input("اسمت چیست؟ ")
+print("سلام", name)
+print("به محیط تمرین پایتون خوش آمدی!")</textarea>
+      </div>
+
+      <div class="toolbar">
+        <button id="runButton" disabled>▶ اجرای کد</button>
+        <button id="exampleButton">بارگذاری مثال</button>
+        <button id="clearButton">پاک‌کردن خروجی</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="heading">
+        <span>خروجی برنامه</span>
+        <span>Console</span>
+      </div>
+      <pre id="output">در حال بارگذاری موتور پایتون...</pre>
+    </section>
+
+    <p class="note">
+      اجرای پایتون در مرورگر انجام می‌شود. برای بارگذاری اولیه،
+      اتصال اینترنت لازم است. بعضی کتابخانه‌ها و قابلیت‌های سیستم‌عامل
+      در این محیط در دسترس نیستند.
+    </p>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+
+  <script>
+    const output = document.getElementById("output");
+    const status = document.getElementById("status");
+    const runButton = document.getElementById("runButton");
+
+    const editor = CodeMirror.fromTextArea(
+      document.getElementById("code"),
+      {
+        mode: "python",
+        theme: "material-darker",
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: true
+      }
+    );
+
+    let pyodide = null;
+    let isRunning = false;
+
+    async function initializePython() {
+      try {
+        pyodide = await loadPyodide();
+
+        pyodide.runPython(`
+import builtins
+import contextlib
+import io
+import traceback
+
+practice_globals = {"__name__": "__main__"}
+
+def run_practice_code(code):
+    captured_out = io.StringIO()
+    captured_err = io.StringIO()
+
+    def practice_input(message=""):
+        from js import prompt
+        value = prompt(str(message))
+        return "" if value is None else str(value)
+
+    original_input = builtins.input
+    builtins.input = practice_input
+
+    try:
+        with contextlib.redirect_stdout(captured_out):
+            with contextlib.redirect_stderr(captured_err):
+                exec(
+                    compile(code, "main.py", "exec"),
+                    practice_globals
+                )
+    except Exception:
+        traceback.print_exc(file=captured_err)
+    finally:
+        builtins.input = original_input
+
+    return captured_out.getvalue() + captured_err.getvalue()
+        `);
+
+        status.textContent = "پایتون آماده است";
+        output.textContent = "کدت را بنویس و اجرا کن.";
+        runButton.disabled = false;
+
+      } catch (error) {
+        status.textContent = "خطا در بارگذاری";
+        output.textContent =
+          "موتور پایتون بارگذاری نشد. اتصال اینترنت را بررسی کن.\n\n" +
+          String(error);
+      }
+    }
+
+    runButton.addEventListener("click", async () => {
+      if (!pyodide || isRunning) return;
+
+      isRunning = true;
+      runButton.disabled = true;
+      status.textContent = "در حال اجرا...";
+      output.textContent = "";
+
+      try {
+        pyodide.globals.set("practice_code_from_editor", editor.getValue());
+
+        const result = await pyodide.runPythonAsync(
+          "run_practice_code(practice_code_from_editor)"
+        );
+
+        output.textContent =
+          result || "کد اجرا شد؛ خروجی چاپ‌شده‌ای وجود ندارد.";
+
+      } catch (error) {
+        output.textContent = String(error);
+
+      } finally {
+        isRunning = false;
+        runButton.disabled = false;
+        status.textContent = "پایتون آماده است";
+      }
+    });
+
+    document.getElementById("exampleButton").addEventListener("click", () => {
+      editor.setValue(
+`numbers = [2, 4, 6, 8, 10]
+
+total = sum(numbers)
+average = total / len(numbers)
+
+print("اعداد:", numbers)
+print("مجموع:", total)
+print("میانگین:", average)
+
+for number in numbers:
+    if number > 5:
+        print(number, "بزرگ‌تر از ۵ است")`
+      );
+
+      editor.focus();
+    });
+
+    document.getElementById("clearButton").addEventListener("click", () => {
+      output.textContent = "";
+    });
+
+    initializePython();
+  </script>
+</body>
+</html>
