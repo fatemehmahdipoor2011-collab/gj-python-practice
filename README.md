@@ -3,448 +3,739 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07051b">
-<title>GJ Python Studio</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101820">
+<title>GJ Python Lab | محیط برنامه‌نویسی</title>
 
 <style>
-:root{
-  --bg:#07051b;
-  --panel:#0c0b28;
-  --panel2:#111039;
-  --line:#30216c;
-  --purple:#a855f7;
-  --blue:#397bff;
-  --cyan:#55e7ff;
-  --text:#f4f1ff;
-  --muted:#9695c7;
-  --green:#43f5b0;
+:root {
+  --bg: #101820;
+  --surface: #17232d;
+  --surface2: #1d2c38;
+  --border: #2c404d;
+  --text: #eef5f7;
+  --muted: #9aafb9;
+  --cyan: #54e6d0;
+  --blue: #80aaff;
+  --orange: #ffbd69;
+  --red: #ff7885;
+  --green: #a8f0b0;
 }
-*{box-sizing:border-box}
-body{
-  margin:0;min-height:100vh;color:var(--text);
-  font-family:Tahoma,Arial,sans-serif;
-  background:
-    radial-gradient(ellipse at 15% 0%,#45208055,transparent 35%),
-    radial-gradient(ellipse at 90% 10%,#1742a555,transparent 34%),
-    radial-gradient(ellipse at 50% 100%,#34116b30,transparent 40%),
-    var(--bg);
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Tahoma, Arial, sans-serif;
+  min-height: 100vh;
 }
-button{font:inherit;cursor:pointer}
-button:disabled{opacity:.55;cursor:wait}
-.topbar{
-  position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:space-between;
-  gap:14px;padding:18px 27px;
-  background:linear-gradient(100deg,#110a30,#0b1540,#160c38);
-  border-bottom:1px solid #4831a0;
+button, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; }
+button:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
 }
-.topbar:before{
-  content:"";position:absolute;left:10%;right:10%;bottom:-2px;height:3px;
-  background:linear-gradient(90deg,transparent,#a855f7,#387dff,#e84dff,transparent);
-  filter:blur(3px);
+.app { max-width: 1600px; margin: auto; padding: 20px; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
-.brand{display:flex;align-items:center;gap:13px;position:relative}
-.logo{
-  width:48px;height:48px;display:grid;place-items:center;
-  border-radius:15px;font-size:21px;font-weight:900;
-  background:linear-gradient(140deg,#b54cff,#544cff 60%,#27cfff);
-  box-shadow:0 0 28px #7845ff75;
+.logo { display: flex; align-items: center; gap: 13px; }
+.logo-icon {
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  background: var(--cyan); color: #10222a;
+  font: bold 15px Consolas, monospace;
+  border-radius: 13px;
 }
-.brand h1{margin:0;font-size:clamp(17px,3vw,25px)}
-.brand h1 span{
-  background:linear-gradient(90deg,#65a7ff,#bd83ff,#f08bff);
-  color:transparent;background-clip:text;
+.logo h2 { margin: 0; font-size: 16px; }
+.logo small {
+  display: block; color: var(--muted);
+  font-size: 10px; margin-top: 6px;
+  direction: ltr; text-align: right;
 }
-.brand p{margin:5px 0 0;font-size:10px;letter-spacing:3px;color:#858bda}
-.header-right{display:flex;gap:10px;align-items:center}
-.pill{
-  border:1px solid #433786;background:#11102f;padding:10px 13px;
-  border-radius:30px;color:#bfb7ff;font-size:11px;white-space:nowrap;
+.connection {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--muted); font-size: 11px;
 }
-.online-dot{
-  display:inline-block;width:7px;height:7px;border-radius:50%;
-  background:var(--green);box-shadow:0 0 10px var(--green);margin-left:7px;
+.connection-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--orange);
 }
-.layout{
-  width:min(1600px,100%);margin:auto;padding:22px;
-  display:grid;grid-template-columns:225px minmax(0,1fr);gap:17px;
+.hero {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 24px;
+  padding: 35px 4px 25px;
 }
-.panel{
-  background:linear-gradient(145deg,#11102ff5,#090a21f5);
-  border:1px solid #30256a;border-radius:17px;
-  box-shadow:0 15px 45px #0005,0 0 25px #4824aa0a;
+.eyebrow {
+  color: var(--cyan); font-size: 11px;
+  letter-spacing: 2px; direction: ltr;
+  text-align: right;
 }
-.sidebar{padding:15px;align-self:stretch}
-.label{
-  margin:5px 0 13px;font-size:11px;font-weight:bold;
-  color:#a9a0e8;letter-spacing:.4px;
+h1 { font-size: clamp(26px, 4vw, 43px); margin: 12px 0; }
+.hero p { color: var(--muted); font-size: 12px; line-height: 2; margin: 0; }
+.hero-chip {
+  flex-shrink: 0; padding: 12px 15px;
+  border: 1px solid var(--border); border-radius: 12px;
+  color: var(--cyan); font: 11px Consolas, monospace;
+  direction: ltr;
 }
-.nav{
-  display:flex;align-items:center;gap:10px;width:100%;
-  text-align:right;padding:12px 10px;margin-bottom:8px;
-  color:#c6c5ec;background:#11112f;border:1px solid #272657;
-  border-radius:12px;transition:.2s;font-size:12px;
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, .8fr);
+  gap: 16px;
 }
-.nav .ico{
-  display:grid;place-items:center;flex-shrink:0;
-  width:34px;height:34px;border-radius:10px;
-  background:#21164e;color:#bba0ff;font-size:17px;
+.panel {
+  min-width: 0; overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
 }
-.nav:hover,.nav.active{
-  color:#fff;border-color:#7960ff;
-  background:linear-gradient(110deg,#5422a9,#173eaa);
-  box-shadow:0 0 20px #6040ff28;transform:translateY(-1px);
+.panel-header {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+  padding: 15px 17px;
+  border-bottom: 1px solid var(--border);
 }
-.nav small{display:block;color:#9996ce;font-size:10px;margin-top:5px}
-.nav.active small{color:#d5d1ff}
-.quote{
-  position:relative;overflow:hidden;margin-top:19px;padding:17px 13px;
-  border:1px solid #5132a6;border-radius:14px;
-  background:radial-gradient(ellipse at 80% 0%,#7539bf55,transparent 55%),
-  linear-gradient(140deg,#171039,#0d1b46);
+.panel-title { font-size: 12px; font-weight: bold; }
+.panel-subtitle {
+  display: block; color: var(--muted);
+  font-size: 10px; font-weight: normal; margin-top: 5px;
 }
-.quote .star{font-size:22px;color:#c49aff}
-.quote h3{font-size:12px;margin:9px 0;color:#e6d7ff}
-.quote p{font-size:11px;line-height:2;color:#a7a8d9;margin:0}
-.quote .quote-glow{
-  position:absolute;left:-25px;bottom:-40px;width:120px;height:90px;
-  border-radius:50%;background:#7546ff55;filter:blur(30px);
+.file-tag {
+  color: var(--cyan); background: #203b40;
+  border-radius: 6px; padding: 7px 10px;
+  direction: ltr; font: 11px Consolas, monospace;
 }
-.main{min-width:0}
-.hero{
-  display:flex;justify-content:space-between;align-items:center;gap:14px;
-  padding:20px;margin-bottom:15px;position:relative;overflow:hidden;
-  background:
-    radial-gradient(ellipse at 85% 30%,#5143db45,transparent 40%),
-    linear-gradient(110deg,#171039,#101947 70%,#130e36);
-  border:1px solid #42358e;border-radius:17px;
+.editor-toolbar {
+  display: flex; justify-content: space-between;
+  gap: 8px; padding: 10px 15px;
+  background: #131e27; color: var(--muted);
+  font: 10px Consolas, monospace; direction: ltr;
 }
-.hero:after{
-  content:"</>";position:absolute;left:24px;top:-15px;
-  font-size:95px;font-weight:900;color:#9c83ff0b;pointer-events:none;
+.editor-wrap { position: relative; background: #111a22; }
+#code {
+  display: block; width: 100%; height: 420px;
+  resize: vertical; border: 0; border-radius: 0;
+  outline: none; padding: 18px;
+  color: #d9f5ee; background: #111a22;
+  font: 14px/1.85 Consolas, "Courier New", monospace;
+  direction: ltr; text-align: left; tab-size: 4;
+  white-space: pre; overflow: auto;
 }
-.hero h2{font-size:clamp(17px,2.4vw,24px);margin:0 0 9px}
-.hero h2 span{color:#8bafff}
-.hero p{font-size:11px;line-height:1.9;color:#aaa8d7;margin:0}
-.hero-tag{
-  z-index:1;white-space:nowrap;border:1px solid #5844a0;
-  color:#d0baff;background:#201849;padding:10px 12px;
-  border-radius:12px;font-size:11px;
+.CodeMirror {
+  height: 420px;
+  font: 14px/1.8 Consolas, monospace;
+  direction: ltr; text-align: left;
 }
-.editor-panel{padding:15px;overflow:hidden}
-.editor-head{
-  display:flex;justify-content:space-between;align-items:center;
-  flex-wrap:wrap;gap:12px;margin-bottom:14px;
+.editor-footer {
+  display: flex; justify-content: space-between;
+  gap: 10px; padding: 9px 14px;
+  color: var(--muted); font-size: 10px;
+  border-top: 1px solid var(--border);
 }
-.file-info{display:flex;align-items:center;gap:10px}
-.file-icon{
-  width:39px;height:39px;display:grid;place-items:center;
-  border-radius:12px;background:linear-gradient(135deg,#5628a5,#174ba7);
-  color:#d8caff;font-weight:bold;box-shadow:0 0 17px #6147ff26;
+.toolbar {
+  display: grid; grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 8px; padding: 13px;
 }
-.file-info strong{font-size:12px}
-.file-info small{display:block;color:#8588c2;font-size:10px;margin-top:5px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn{
-  padding:10px 12px;color:#d8d5ff;border:1px solid #39346f;
-  background:#151538;border-radius:10px;font-size:11px;transition:.2s;
+.btn {
+  min-height: 42px; border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px;
+  color: var(--text); background: var(--surface2);
+  font-size: 11px;
 }
-.btn:hover:not(:disabled){border-color:#9e7aff;filter:brightness(1.2)}
-.btn.run{
-  color:white;font-weight:bold;border-color:#8e79ff;
-  background:linear-gradient(110deg,#9637ed,#4c4bff,#167fe9);
-  box-shadow:0 0 20px #6849ff50;
+.btn:hover { border-color: var(--cyan); }
+.btn-run {
+  background: var(--cyan); border-color: var(--cyan);
+  color: #10252b; font-weight: bold;
 }
-.btn.run:hover:not(:disabled){box-shadow:0 0 28px #7c59ff90}
-.editor-shell{
-  border:1px solid #3c3c91;border-radius:13px;overflow:hidden;
-  box-shadow:0 0 25px #302bff16;
+.btn-run { grid-column: 1 / -1; min-height: 49px; font-size: 13px; }
+.btn-danger { color: #ffb5bc; }
+.console-panel { display: flex; flex-direction: column; }
+.console-tabs {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  gap: 8px; padding: 11px 14px;
+  background: #131e27; border-bottom: 1px solid var(--border);
 }
-.editor-strip{
-  height:37px;display:flex;align-items:center;gap:7px;padding:0 12px;
-  background:#10112d;border-bottom:1px solid #282957;
-  direction:ltr;font-size:10px;color:#8e91c8;
+.console-tabs strong { font-size: 11px; }
+.console-label { color: var(--muted); font-size: 10px; }
+.console-body {
+  min-height: 340px; flex: 1; padding: 17px;
+  background: #0e171e;
 }
-.traffic{width:7px;height:7px;border-radius:50%;background:#a855f7}
-.traffic:nth-child(2){background:#4d86ff}
-.traffic:nth-child(3){background:#55e7ff}
-.editor-strip span:last-child{margin-left:auto}
-.CodeMirror{
-  height:340px!important;background:#080b20!important;color:#e3e6ff;
-  direction:ltr;text-align:left;font:14px/1.9 Consolas,Monaco,monospace;
+#output {
+  margin: 0; color: var(--green);
+  font: 13px/1.9 Consolas, monospace;
+  direction: ltr; text-align: left;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+  min-height: 280px; max-height: 550px; overflow: auto;
 }
-.CodeMirror-gutters{background:#0b0d26!important;border-right:1px solid #25264d!important}
-.CodeMirror-linenumber{color:#666eae!important}
-.CodeMirror-cursor{border-left:2px solid #c6a1ff!important}
-.CodeMirror-selected{background:#38316c!important}
-.cm-s-default .cm-keyword{color:#c792ff!important}
-.cm-s-default .cm-def{color:#66d9ff!important}
-.cm-s-default .cm-string{color:#8ee8c0!important}
-.cm-s-default .cm-number{color:#ffbf86!important}
-.cm-s-default .cm-comment{color:#727bb4!important}
-.cm-s-default .cm-builtin{color:#63caff!important}
-.cm-s-default .cm-operator{color:#ff8bd4!important}
-.console{
-  margin-top:14px;border:1px solid #33377c;border-radius:13px;
-  overflow:hidden;background:#070b1d;
+#output.error-output { color: #ff9da6; }
+.console-bottom {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 14px; border-top: 1px solid var(--border);
 }
-.console-head{
-  padding:13px 15px;display:flex;align-items:center;justify-content:space-between;
-  gap:10px;flex-wrap:wrap;background:linear-gradient(100deg,#161035,#101b3c);
-  border-bottom:1px solid #292c5d;
+.mini-dot {
+  flex-shrink: 0; width: 8px; height: 8px;
+  margin-top: 4px; border-radius: 50%; background: var(--cyan);
 }
-.console-title{font-size:12px;color:#c1a7ff;font-weight:bold}
-.status{
-  font-size:10px;padding:7px 10px;border-radius:30px;
-  background:#10342e;color:#5bf1bd;border:1px solid #1a6555;
+#status { color: var(--muted); font-size: 11px; line-height: 1.9; }
+#diagnostics {
+  display: none; margin: 12px; padding: 12px;
+  color: #ffb5bc; background: #301d25;
+  border: 1px solid #693744; border-radius: 8px;
+  font-size: 11px; line-height: 1.9;
+  white-space: pre-wrap; overflow-wrap: anywhere;
 }
-#output{
-  margin:0;min-height:120px;max-height:320px;overflow:auto;padding:15px;
-  white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left;
-  font:13px/1.9 Consolas,Monaco,monospace;color:#8ff3ce;
-  background:repeating-linear-gradient(0deg,#0a102600,#0a102600 25px,#18204422 26px),#070b1d;
+#diagnostics.visible { display: block; }
+.diagnostic-actions { display: flex; gap: 8px; margin-top: 10px; }
+.diagnostic-actions button {
+  padding: 9px; border: 1px solid #693744;
+  border-radius: 6px; color: var(--text); background: #472631;
 }
-#output.error{color:#ff9dbd}
-.footer{
-  width:min(1600px,100%);margin:auto;padding:0 22px 22px;
-  display:flex;justify-content:space-between;gap:12px;
-  font-size:10px;color:#777cae;
+.tips {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 12px; margin-top: 16px;
 }
-.footer b{color:#a68cff}
-@media(max-width:850px){
-  .layout{grid-template-columns:1fr;padding:12px;gap:12px}
-  .sidebar{order:2}
-  .nav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-  .nav{margin:0;padding:9px}
-  .quote{margin-top:13px}
-  .editor-panel{padding:10px}
-  .CodeMirror{height:290px!important}
-  .pill:last-child{display:none}
-  .hero{padding:16px}
+.tip {
+  padding: 18px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
 }
-@media(max-width:480px){
-  .topbar{padding:13px}
-  .logo{width:40px;height:40px}
-  .brand p{letter-spacing:1px}
-  .header-right .pill{font-size:0;padding:10px}
-  .hero-tag{display:none}
-  .actions{width:100%}
-  .actions .btn{flex:1}
-  .editor-head{align-items:flex-start}
-  .CodeMirror{font-size:12px!important;height:270px!important}
-  .footer{padding:5px 13px 18px;flex-wrap:wrap}
+.tip-number { color: var(--cyan); font: 11px Consolas, monospace; }
+.tip h3 { font-size: 12px; margin: 12px 0 7px; }
+.tip p { color: var(--muted); font-size: 11px; line-height: 2; margin: 0; }
+footer { padding: 25px 0 8px; text-align: center; color: var(--muted); font-size: 10px; }
+
+@media(max-width:900px) {
+  .app { padding: 13px; }
+  .workspace { grid-template-columns: 1fr; }
+  #code, .CodeMirror { height: 340px; }
+  .console-body { min-height: 220px; }
+  #output { min-height: 170px; }
+}
+@media(max-width:540px) {
+  .app { padding: 9px; }
+  .topbar { padding: 12px; }
+  .logo-icon { width: 40px; height: 40px; }
+  .logo h2 { font-size: 13px; }
+  .logo small { font-size: 9px; }
+  .connection { max-width: 105px; font-size: 10px; }
+  .hero { padding: 25px 3px 20px; }
+  h1 { font-size: 28px; }
+  .hero-chip { display: none; }
+  .panel-header { padding: 12px; }
+  #code, .CodeMirror { height: 285px; font-size: 12px; }
+  .toolbar { grid-template-columns: 1fr 1fr; padding: 9px; }
+  .btn-run { grid-column: 1 / -1; }
+  .tips { grid-template-columns: 1fr; }
+  .tip { padding: 14px; }
+  .console-body { padding: 12px; }
+  #output { font-size: 12px; }
 }
 </style>
 </head>
-
 <body>
+<main class="app">
+
 <header class="topbar">
-  <div class="brand">
-    <div class="logo">Py</div>
+  <div class="logo">
+    <div class="logo-icon">GJ.py</div>
     <div>
-      <h1>GJ <span>Python Studio</span></h1>
-      <p>CODE · LEARN · CREATE</p>
+      <h2>GJ PYTHON LAB</h2>
+      <small>CODE · TEST · LEARN</small>
     </div>
   </div>
-  <div class="header-right">
-    <div class="pill"><span class="online-dot"></span><span id="topStatus">در حال آماده‌سازی</span></div>
-    <div class="pill">✦ Python Pro Academy</div>
+  <div class="connection">
+    <span class="connection-dot" id="connectionDot"></span>
+    <span id="connectionText">در حال بررسی اتصال</span>
   </div>
 </header>
 
-<div class="layout">
-  <aside class="sidebar panel">
-    <div class="label">✦ کتابخانه کد</div>
-    <div class="nav-grid">
-      <button class="nav active" data-example="hello">
-        <span class="ico">⌘</span><span>سلام دنیا<small>شروعی ساده</small></span>
-      </button>
-      <button class="nav" data-example="variables">
-        <span class="ico">∑</span><span>متغیرها<small>داده و محاسبات</small></span>
-      </button>
-      <button class="nav" data-example="condition">
-        <span class="ico">◇</span><span>شرط if<small>تصمیم‌گیری</small></span>
-      </button>
-      <button class="nav" data-example="loop">
-        <span class="ico">↻</span><span>حلقه for<small>تکرار هوشمند</small></span>
-      </button>
-      <button class="nav" data-example="function">
-        <span class="ico">ƒ</span><span>توابع<small>کد قابل استفاده مجدد</small></span>
-      </button>
-      <button class="nav" data-example="list">
-        <span class="ico">▤</span><span>لیست‌ها<small>مجموعه داده‌ها</small></span>
-      </button>
+<section class="hero">
+  <div>
+    <div class="eyebrow">YOUR PERSONAL CODING WORKSPACE</div>
+    <h1>ایده‌ات را به <span style="color:var(--cyan)">کد</span> تبدیل کن.</h1>
+    <p>کد بنویس، اجرا کن و نتیجه را در کنسول ببین.<br>بدون نصب پایتون روی دستگاه.</p>
+  </div>
+  <div class="hero-chip">PYTHON 3 / WEB</div>
+</section>
+
+<section class="workspace">
+  <section class="panel">
+    <div class="panel-header">
+      <div class="panel-title">محیط ویرایش کد
+        <span class="panel-subtitle">کد پایتون خودت را اینجا بنویس</span>
+      </div>
+      <span class="file-tag">main.py</span>
     </div>
-    <div class="quote">
-      <div class="star">✧</div>
-      <h3>هر خط کد، یک قدم جلوتر</h3>
-      <p>ایده‌های بزرگ از تمرین‌های کوچک شروع می‌شوند. امروز چیزی بساز که دیروز بلد نبودی.</p>
-      <div class="quote-glow"></div>
+    <div class="editor-toolbar">
+      <span>PYTHON</span>
+      <span id="editorMode">EDITOR STARTING</span>
     </div>
-  </aside>
-
-  <main class="main">
-    <section class="hero">
-      <div>
-        <h2>ایده‌ات را به <span>کد تبدیل کن.</span></h2>
-        <p>فضای اختصاصی تو برای یادگیری، آزمایش و ساختن با پایتون.</p>
+    <div class="editor-wrap">
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">name = input("اسمت چیست؟ ")
+print("سلام", name)
+print("به آزمایشگاه پایتون خوش آمدی!")</textarea>
+    </div>
+    <div class="editor-footer">
+      <span id="lineInfo">LINE 1</span>
+      <span>UTF-8 · SPACES: 4</span>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-run" id="runButton" disabled>در حال بارگذاری پایتون...</button>
+      <button class="btn" id="exampleButton">نمونه کد</button>
+      <button class="btn" id="downloadButton">ذخیره فایل</button>
+      <button class="btn btn-danger" id="clearButton">پاک‌کردن خروجی</button>
+    </div>
+    <div id="diagnostics">
+      <div id="diagnosticText"></div>
+      <div class="diagnostic-actions">
+        <button id="retryButton">تلاش مجدد</button>
+        <button id="copyErrorButton">کپی خطا</button>
       </div>
-      <div class="hero-tag">✦ YOUR CREATIVE SPACE</div>
-    </section>
+    </div>
+  </section>
 
-    <section class="editor-panel panel">
-      <div class="editor-head">
-        <div class="file-info">
-          <div class="file-icon">Py</div>
-          <div><strong>main.py</strong><small>PYTHON SOURCE FILE</small></div>
-        </div>
-        <div class="actions">
-          <button class="btn run" id="run" disabled>▶ بارگذاری پایتون...</button>
-          <button class="btn" id="clearCode">⌫ پاک کردن کد</button>
-          <button class="btn" id="clearOutput">⌑ پاک کردن خروجی</button>
-        </div>
+  <section class="panel console-panel">
+    <div class="panel-header">
+      <div class="panel-title">کنسول اجرا
+        <span class="panel-subtitle">نتیجه و خطاهای برنامه</span>
       </div>
+      <span class="file-tag">OUTPUT</span>
+    </div>
+    <div class="console-tabs">
+      <strong>خروجی برنامه</strong>
+      <span class="console-label" id="runTime">READY</span>
+    </div>
+    <div class="console-body">
+      <pre id="output">در حال آماده‌سازی موتور پایتون...</pre>
+    </div>
+    <div class="console-bottom">
+      <span class="mini-dot" id="statusDot"></span>
+      <div id="status">در حال بررسی فایل‌های موردنیاز...</div>
+    </div>
+  </section>
+</section>
 
-      <div class="editor-shell">
-        <div class="editor-strip">
-          <i class="traffic"></i><i class="traffic"></i><i class="traffic"></i>
-          <span>main.py</span>
-          <span>Python 3 · Editor</span>
-        </div>
-        <textarea id="code"># Welcome to GJ Python Studio
-name = "Python"
+<section class="tips">
+  <article class="tip">
+    <span class="tip-number">01 / WRITE</span>
+    <h3>کدنویسی</h3>
+    <p>کد را در ویرایشگر بنویس یا نمونهٔ آماده را تغییر بده.</p>
+  </article>
+  <article class="tip">
+    <span class="tip-number">02 / EXECUTE</span>
+    <h3>اجرا و آزمایش</h3>
+    <p>با دکمهٔ اجرای کد، برنامه را در مرورگر اجرا کن.</p>
+  </article>
+  <article class="tip">
+    <span class="tip-number">03 / IMPROVE</span>
+    <h3>یادگیری</h3>
+    <p>خروجی و خطاها را بررسی کن و کدت را بهتر کن.</p>
+  </article>
+</section>
 
-print("Hello", name)
-print("Welcome to Python!")
-print(10 + 20)</textarea>
-      </div>
-
-      <section class="console">
-        <div class="console-head">
-          <div class="console-title">▸ خروجی برنامه / TERMINAL</div>
-          <div class="status" id="status">در حال آماده‌سازی</div>
-        </div>
-        <pre id="output">در حال بارگذاری موتور پایتون...</pre>
-      </section>
-    </section>
-  </main>
-</div>
-
-<footer class="footer">
-  <span>♡ آموزش پایتون · ساختن آینده با کد</span>
-  <b>GJ PYTHON STUDIO ✦</b>
-</footer>
+<footer>GJ PYTHON LAB · LEARN BY BUILDING</footer>
+</main>
 
 <script>
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  tg.setHeaderColor("#07051b");
-  tg.setBackgroundColor("#07051b");
-}
+"use strict";
 
-const editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-  mode:"python",
-  lineNumbers:true,
-  indentUnit:4,
-  tabSize:4,
-  lineWrapping:true,
-  autofocus:false
-});
+(() => {
+  const $ = id => document.getElementById(id);
+  const editorFallback = $("code");
+  const PYODIDE_VERSION = "0.27.7";
 
-const runButton = document.getElementById("run");
-const output = document.getElementById("output");
-const status = document.getElementById("status");
-const topStatus = document.getElementById("topStatus");
+  const sources = [
+    {
+      script: `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.js`,
+      base: `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`
+    },
+    {
+      script: `https://unpkg.com/pyodide@${PYODIDE_VERSION}/ pyodide.js`.replace(" ", ""),
+      base: `https://unpkg.com/pyodide@${PYODIDE_VERSION}/`
+    }
+  ];
 
-let python = null;
-let running = false;
+  let pyodide = null;
+  let editor = null;
+  let loading = false;
+  let running = false;
+  let lastError = "";
 
-const examples = {
-  hello: '# Welcome to GJ Python Studio\nname = "Python"\n\nprint("Hello", name)\nprint("Welcome to Python!")\nprint(10 + 20)',
-  variables: 'name = "Python"\na = 10\nb = 20\n\nprint("Language:", name)\nprint("Sum:", a + b)\nprint("Product:", a * b)',
-  condition: 'number = 12\n\nif number > 10:\n    print("Number is greater than 10")\nelse:\n    print("Number is 10 or less")',
-  loop: 'for number in range(1, 6):\n    print(number)',
-  function: 'def square(number):\n    return number * number\n\nprint(square(5))\nprint(square(12))',
-  list: 'fruits = ["apple", "banana", "orange"]\n\nfor fruit in fruits:\n    print(fruit)'
-};
+  function setStatus(message, type = "normal") {
+    $("status").textContent = message;
+    $("connectionText").textContent =
+      type === "error" ? "خطای اتصال" :
+      pyodide ? "پایتون آماده است" : "در حال آماده‌سازی";
 
-document.querySelectorAll("[data-example]").forEach(button => {
-  button.addEventListener("click", () => {
-    editor.setValue(examples[button.dataset.example]);
-    document.querySelectorAll("[data-example]").forEach(item => {
-      item.classList.toggle("active", item === button);
+    const color = type === "error" ? "var(--red)" :
+      type === "success" ? "var(--cyan)" : "var(--orange)";
+
+    $("connectionDot").style.background = color;
+    $("statusDot").style.background = color;
+  }
+
+  function setOutput(text, error = false) {
+    $("output").textContent = text;
+    $("output").classList.toggle("error-output", error);
+  }
+
+  function setButtons(enabled) {
+    $("runButton").disabled = !enabled;
+    $("runButton").textContent = enabled ? "▶ اجرای کد" : "در حال بارگذاری پایتون...";
+  }
+
+  function showDiagnostic(message) {
+    lastError = message;
+    $("diagnosticText").textContent = message;
+    $("diagnostics").classList.add("visible");
+  }
+
+  function hideDiagnostic() {
+    $("diagnostics").classList.remove("visible");
+  }
+
+  function formatError(error) {
+    if (error && error.stack) return String(error.stack);
+    if (error && error.message) return String(error.message);
+    try { return JSON.stringify(error, null, 2); }
+    catch (_) { return String(error); }
+  }
+
+  function loadScript(url) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = url;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        script.remove();
+        reject(new Error("فایل کتابخانه دریافت نشد:\n" + url));
+      };
+      document.head.appendChild(script);
     });
-    output.textContent = "نمونه‌کد بارگذاری شد؛ برای اجرا روی دکمه کلیک کن.";
-    output.classList.remove("error");
+  }
+
+  async function loadCodeMirror() {
+    if (window.CodeMirror) return true;
+
+    const cssUrls = [
+      "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css",
+      "https://unpkg.com/codemirror@5.65.16/lib/codemirror.css"
+    ];
+
+    const scriptUrls = [
+      "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js",
+      "https://unpkg.com/codemirror@5.65.16/lib/codemirror.js"
+    ];
+
+    for (const url of cssUrls) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = url;
+      document.head.appendChild(link);
+    }
+
+    let loaded = false;
+    for (const url of scriptUrls) {
+      try {
+        await loadScript(url);
+        if (window.CodeMirror) {
+          loaded = true;
+          break;
+        }
+      } catch (_) {}
+    }
+
+    if (!loaded) return false;
+
+    try {
+      await loadScript(
+        "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"
+      );
+    } catch (_) {
+      try {
+        await loadScript("https://unpkg.com/codemirror@5.65.16/mode/python/python.js");
+      } catch (_) {}
+    }
+
+    return true;
+  }
+
+  async function initEditor() {
+    const hasCodeMirror = await loadCodeMirror();
+
+    if (!hasCodeMirror || !window.CodeMirror) {
+      $("editorMode").textContent = "BASIC EDITOR";
+      editor = null;
+      return;
+    }
+
+    if (!editor) {
+      editor = window.CodeMirror.fromTextArea(editorFallback, {
+        mode: window.CodeMirror.modes && window.CodeMirror.modes.python
+          ? "python" : null,
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: false,
+        autofocus: false,
+        extraKeys: {
+          "Tab": cm => cm.replaceSelection("    ", "end"),
+          "Ctrl-Enter": runCode,
+          "Cmd-Enter": runCode
+        }
+      });
+
+      editor.on("cursorActivity", updateLineInfo);
+      editor.on("change", updateLineInfo);
+    }
+
+    $("editorMode").textContent = "CODEMIRROR";
+    editor.refresh();
+  }
+
+  function updateLineInfo() {
+    let line = 1;
+    if (editor) line = editor.getCursor().line + 1;
+    else {
+      const value = editorFallback.value;
+      const pos = editorFallback.selectionStart;
+      line = value.slice(0, pos).split("\n").length;
+    }
+    $("lineInfo").textContent = "LINE " + line;
+  }
+
+  function getCode() {
+    return editor ? editor.getValue() : editorFallback.value;
+  }
+
+  function setCode(value) {
+    if (editor) editor.setValue(value);
+    else editorFallback.value = value;
+    updateLineInfo();
+  }
+
+  async function initPython() {
+    if (pyodide || loading) return;
+
+    loading = true;
+    hideDiagnostic();
+    setButtons(false);
+    setStatus("در حال بارگذاری موتور پایتون...");
+    setOutput("در حال دریافت موتور پایتون. ممکن است بار اول کمی طول بکشد.");
+
+    try {
+      await initEditor();
+
+      let loaded = false;
+      const failures = [];
+
+      for (const source of sources) {
+        try {
+          setStatus("در حال امتحان یک منبع برای موتور پایتون...");
+          if (typeof window.loadPyodide !== "function") {
+            await loadScript(source.script);
+          }
+
+          if (typeof window.loadPyodide !== "function") {
+            throw new Error("فایل دریافت شد، اما loadPyodide در دسترس نیست.");
+          }
+
+          pyodide = await window.loadPyodide({
+            indexURL: source.base
+          });
+
+          loaded = true;
+          break;
+        } catch (error) {
+          failures.push(source.base + "\n" + formatError(error));
+          pyodide = null;
+        }
+      }
+
+      if (!loaded || !pyodide) {
+        throw new Error(
+          "موتور پایتون از هیچ‌کدام از منابع بارگذاری نشد.\n\n" +
+          failures.join("\n\n----------------\n\n") +
+          "\n\nاتصال اینترنت، دسترسی به CDNها یا تنظیمات مرورگر را بررسی کن."
+        );
+      }
+
+      pyodide.runPython(`
+import builtins
+import contextlib
+import io
+import traceback
+
+def run_practice_code(code):
+    output = io.StringIO()
+    errors = io.StringIO()
+    original_input = builtins.input
+
+    def browser_input(message=""):
+        from js import prompt
+        answer = prompt(str(message))
+        if answer is None:
+            raise EOFError("ورودی توسط کاربر لغو شد.")
+        return str(answer)
+
+    builtins.input = browser_input
+    try:
+        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            exec(compile(code, "main.py", "exec"), {"__name__": "__main__"})
+    except BaseException as exc:
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            errors.write(type(exc).__name__ + ": اجرای برنامه متوقف شد.\\n")
+        else:
+            traceback.print_exc(file=errors)
+    finally:
+        builtins.input = original_input
+
+    return output.getvalue() + errors.getvalue()
+      `);
+
+      setButtons(true);
+      setStatus("موتور پایتون با موفقیت آماده شد.", "success");
+      $("runTime").textContent = "READY";
+      setOutput("آماده‌ای!\nکدت را بنویس و روی «اجرای کد» بزن.");
+      if (editor) editor.refresh();
+    } catch (error) {
+      pyodide = null;
+      setButtons(false);
+      setStatus("بارگذاری موتور پایتون ناموفق بود.", "error");
+      const details = formatError(error);
+      setOutput("موتور پایتون بارگذاری نشد.\n\n" + details, true);
+      showDiagnostic(details);
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function runCode() {
+    if (!pyodide || running) return;
+
+    running = true;
+    setButtons(false);
+    hideDiagnostic();
+    setStatus("در حال اجرای برنامه...");
+    $("runTime").textContent = "RUNNING";
+    setOutput("");
+
+    const start = performance.now();
+
+    try {
+      pyodide.globals.set("practice_code_from_editor", getCode());
+      const result = await pyodide.runPythonAsync(
+        "run_practice_code(practice_code_from_editor)"
+      );
+
+      const output = String(result || "");
+      setOutput(output || "برنامه اجرا شد؛ خروجی چاپ‌شده‌ای ندارد.");
+      setStatus("اجرای برنامه تمام شد.", "success");
+    } catch (error) {
+      const details = formatError(error);
+      setOutput("خطای اجرای برنامه:\n\n" + details, true);
+      setStatus("برنامه با خطا مواجه شد.", "error");
+    } finally {
+      const elapsed = ((performance.now() - start) / 1000).toFixed(2);
+      $("runTime").textContent = elapsed + " SEC";
+      running = false;
+      setButtons(Boolean(pyodide));
+    }
+  }
+
+  $("runButton").addEventListener("click", runCode);
+
+  $("exampleButton").addEventListener("click", () => {
+    setCode(
+`numbers = [2, 4, 6, 8, 10]
+
+total = sum(numbers)
+average = total / len(numbers)
+
+print("Numbers:", numbers)
+print("Total:", total)
+print("Average:", average)
+
+for number in numbers:
+    if number > 5:
+        print(number, "is greater than 5")`
+    );
+    if (editor) editor.focus();
+    else editorFallback.focus();
   });
-});
 
-document.getElementById("clearCode").addEventListener("click", () => {
-  editor.setValue("");
-  editor.focus();
-});
+  $("clearButton").addEventListener("click", () => {
+    setOutput("خروجی پاک شد.");
+    $("runTime").textContent = "READY";
+  });
 
-document.getElementById("clearOutput").addEventListener("click", () => {
-  output.textContent = "";
-  output.classList.remove("error");
-});
+  $("downloadButton").addEventListener("click", () => {
+    const blob = new Blob([getCode()], {
+      type: "text/x-python;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "main.py";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
 
-async function initializePython() {
-  try {
-    python = await loadPyodide();
-    runButton.disabled = false;
-    runButton.textContent = "▶ اجرای کد";
-    status.textContent = "● پایتون آماده است";
-    topStatus.textContent = "آماده برای اجرا";
-    output.textContent = "Python آماده است.\nکدت را بنویس و اجرا کن.";
-  } catch (error) {
-    status.textContent = "بارگذاری ناموفق";
-    topStatus.textContent = "خطای اتصال";
-    output.textContent =
-      "موتور پایتون بارگذاری نشد.\nاتصال اینترنت را بررسی و صفحه را تازه‌سازی کن.\n\n" + String(error);
-    output.classList.add("error");
-  }
-}
+  $("retryButton").addEventListener("click", () => {
+    if (!loading) initPython();
+  });
 
-runButton.addEventListener("click", async () => {
-  if (!python || running) return;
+  $("copyErrorButton").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(lastError);
+      $("copyErrorButton").textContent = "کپی شد";
+    } catch (_) {
+      $("diagnosticText").textContent =
+        lastError + "\n\nکپی خودکار در این مرورگر در دسترس نیست.";
+    }
+  });
 
-  running = true;
-  runButton.disabled = true;
-  runButton.textContent = "در حال اجرا...";
-  status.textContent = "● در حال اجرا";
-  output.textContent = "";
-  output.classList.remove("error");
+  editorFallback.addEventListener("keyup", updateLineInfo);
+  editorFallback.addEventListener("click", updateLineInfo);
+  editorFallback.addEventListener("input", updateLineInfo);
 
-  let result = "";
-  python.setStdout({batched: text => { result += text + "\n"; }});
-  python.setStderr({batched: text => { result += text + "\n"; }});
+  editorFallback.addEventListener("keydown", event => {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const start = editorFallback.selectionStart;
+      const end = editorFallback.selectionEnd;
+      const value = editorFallback.value;
+      editorFallback.value = value.slice(0, start) + "    " + value.slice(end);
+      editorFallback.selectionStart = editorFallback.selectionEnd = start + 4;
+      updateLineInfo();
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      runCode();
+    }
+  });
 
-  try {
-    await python.runPythonAsync(editor.getValue());
-    output.textContent = result || "برنامه اجرا شد؛ خروجی‌ای نداشت.";
-    status.textContent = "● اجرا کامل شد";
-  } catch (error) {
-    output.textContent = String(error);
-    output.classList.add("error");
-    status.textContent = "● خطای برنامه";
-  } finally {
-    running = false;
-    runButton.disabled = false;
-    runButton.textContent = "▶ اجرای کد";
-  }
-});
+  window.addEventListener("resize", () => {
+    if (editor) editor.refresh();
+  });
 
-initializePython();
+  initPython();
+})();
 </script>
 </body>
 </html>
